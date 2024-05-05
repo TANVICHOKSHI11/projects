@@ -1,0 +1,53 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+
+#define DHTPIN 2 //GPIO 2
+#define DHTTYPE DHT11
+
+#define MQ135_PIN A0
+#define VOLTAGEPIN 34 // Use the actual pin number for A1
+#define CURRENTPIN 35 // Use the actual pin number for A2
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+Serial.begin(115200);
+dht.begin();
+}
+
+void loop() {
+float temperature = dht.readTemperature();
+float humidity = dht.readHumidity();
+float smokeLevel = readMQ135();
+float voltage = readVoltage();
+float current = readACS712();
+
+Serial.println("Temperature: " + String(temperature) + " °C");
+Serial.println("Humidity: " + String(humidity) + " %");
+Serial.println("Smoke Level: " + String(smokeLevel));
+Serial.println("Voltage: " + String(voltage) + " V");
+Serial.println("Current: " + String(current) + " A");
+
+delay(5000); // Delay for 5 seconds
+}
+
+float readMQ135() {
+int sensorValue = analogRead(MQ135_PIN);
+float voltage = sensorValue * (5.0 / 1023.0);
+float resistance = (5.0 - voltage) / voltage;
+float smokeLevel = map(sensorValue, 0, 1023, 0, 100);
+return smokeLevel; // Replace with actual value
+}
+
+float readVoltage() {
+int sensorValue = analogRead(VOLTAGEPIN);
+float voltage = sensorValue * (5.0 / 1023.0);
+return voltage;
+}
+
+float readACS712() {
+int sensorValue = analogRead(CURRENTPIN);
+float current = (sensorValue - 512) / 102.3;
+return current;
+}
